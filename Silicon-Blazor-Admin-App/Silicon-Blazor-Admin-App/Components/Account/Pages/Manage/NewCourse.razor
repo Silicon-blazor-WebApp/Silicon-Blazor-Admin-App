@@ -1,0 +1,182 @@
+﻿@page "/Account/Manage/Course"
+
+<EditForm Model="@CourseModel" OnInvalidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <label>Title</label>
+    <InputText @bind-Value="CourseModel.Title" />
+
+    <label>Ingress</label>
+    <InputText @bind-Value="CourseModel.Ingress" />
+
+    <label>Star Rating</label>
+    <InputNumber @bind-Value="CourseModel.StarRating" />
+
+    <label>Reviews</label>
+    <InputText @bind-Value="CourseModel.Reviews" />
+
+    <label>Likes In Percent</label>
+    <InputText @bind-Value="CourseModel.LikesInProcent" />
+
+    <label>Likes</label>
+    <InputText @bind-Value="CourseModel.Likes" />
+
+    <label>Hours</label>
+    <InputText @bind-Value="CourseModel.Hours" />
+
+    <label>Is Bestseller</label>
+    <InputCheckbox @bind-Value="CourseModel.IsBestseller" />
+
+    <label>Is Digital</label>
+    <InputCheckbox @bind-Value="CourseModel.IsDigital" />
+
+    <label>Image URI</label>
+    <InputText @bind-Value="CourseModel.ImageUri" />
+
+    <label>Image Header URI</label>
+    <InputText @bind-Value="CourseModel.ImageHeaderUri" />
+
+    <label>Categories</label>
+    <InputSelect @bind-Value="CourseModel.Categories" multiple="true">
+        @foreach (var category in CourseModel.Categories)
+        {
+            
+        }
+    </InputSelect>
+
+    <label>Authors</label>
+    <div>
+        @foreach (var author in CourseModel.Authors)
+        {
+            <InputText @bind-Value="author.Name" />
+        }
+        <button @onclick="AddAuthor">Add Author</button>
+    </div>
+
+    <label>Price Currency</label>
+    <InputText @bind-Value="CourseModel.Prices.Currency" />
+
+    <label>Price</label>
+    <InputNumber @bind-Value="CourseModel.Prices.Price" />
+
+    <label>Discount</label>
+    <InputNumber @bind-Value="CourseModel.Prices.Discount" />
+
+    <label>Content Description</label>
+    <InputText @bind-Value="CourseModel.Content.Description" />
+
+    <label>Content Includes</label>
+    <InputSelect @bind-Value="CourseModel.Content.Includes" multiple="true">
+        @foreach (var item in CourseModel.Content.Includes)
+        {
+            <option value="@item">@item</option>
+        }
+    </InputSelect>
+
+    <label>Program Details</label>
+    <div>
+        @foreach (var detail in CourseModel.Content.ProgramDetails)
+        {
+            <div>
+                <label>Title</label>
+                <InputText @bind-Value="detail.Title" />
+
+                <label>Description</label>
+                <InputText @bind-Value="detail.Description" />
+            </div>
+        }
+        <button @onclick="AddProgramDetail">Add Program Detail</button>
+    </div>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+
+
+@code{
+    
+    
+    public Course CourseModel { get; set; } = new Course();
+
+
+    public async Task HandleValidSubmit()
+    {
+        
+
+    }
+
+    public void AddAuthor()
+    {
+        CourseModel.Authors ??= new List<Author>();
+        CourseModel.Authors.Add(new Author());
+    }
+
+    public void AddProgramDetail()
+    {
+        CourseModel.Content ??= new Content();
+        CourseModel.Content.ProgramDetails ??= new List<ProgramDetailItem>();
+        CourseModel.Content.ProgramDetails.Add(new ProgramDetailItem());
+    }
+
+    public List<string> CategoriesList { get; set; } = new List<string>
+    {
+
+    };
+
+    public class Course
+    {
+
+        public string? ImageUri { get; set; }
+        public string? ImageHeaderUri { get; set; }
+        public bool IsBestseller { get; set; }
+
+        public bool IsDigital { get; set; }
+
+        public string[]? Categories { get; set; }
+
+        public string? Title { get; set; }
+
+        public string? Ingress { get; set; }
+
+        public decimal StarRating { get; set; }
+
+        public string? Reviews { get; set; }
+        public string? LikesInProcent { get; set; }
+
+        public string? Likes { get; set; }
+
+        public string? Hours { get; set; }
+
+        public virtual List<Author>? Authors { get; set; }
+
+        public virtual Prices? Prices { get; set; }
+
+        public virtual Content? Content { get; set; }
+    }
+    public class Author
+    {
+        public string? Name { get; set; }
+    }
+
+    public class Prices
+    {
+        public string? Currency { get; set; }
+        public decimal Price { get; set; }
+        public decimal Discount { get; set; }
+    }
+
+    public class Content
+    {
+        public string? Description { get; set; }
+        public string[]? Includes { get; set; }
+        public virtual List<ProgramDetailItem>? ProgramDetails { get; set; }
+    }
+
+    public class ProgramDetailItem
+    {
+        public int Id { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+    }
+
+}

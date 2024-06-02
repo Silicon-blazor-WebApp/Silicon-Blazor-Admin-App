@@ -1,0 +1,92 @@
+﻿@page "/"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Logging
+@using Silicon_Blazor_Admin_App.Components.Account
+@using Silicon_Blazor_Admin_App.Components.Account.Pages
+@using Silicon_Blazor_Admin_App.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+@inject UserManager<ApplicationUser> UserManager
+
+<section id="signin">
+    <div class="container">
+        <EditForm Model="@signInForm" OnValidSubmit="HandleLogin" FormName="Login">
+            <div class="error-message">
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @ErrorMessage
+                    </div>
+                }
+            </div>
+            <h1>Silicon admin portal</h1>
+            <div class="content">
+                <div id="form-email" class="input-group">
+                    <label>Email</label>
+                    <InputText @bind-Value="signInForm.Email" placeholder="Enter your email" />
+                    <ValidationMessage For="() => signInForm.Email" />
+                </div>
+                <div id="form-password" class="input-group">
+                    <label>Password</label>
+                    <InputText @bind-Value="signInForm.Password" type="password" placeholder="Enter your password" />
+                    <ValidationMessage For="() => signInForm.Password" />
+                </div>
+                <button id="form-button" class="btn-theme-s" type="submit">Sign in</button>
+                <hr />
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+@code {
+    private SignInFormModel signInForm { get; set; } = new SignInFormModel();
+    private string? ErrorMessage { get; set; }
+
+    private async Task HandleLogin()
+    {
+        var user = await UserManager.FindByEmailAsync(signInForm.Email);
+        if (user != null)
+        {
+            if (user.RoleName == "Admin")
+            {
+                var result = await SignInManager.PasswordSignInAsync(signInForm.Email, signInForm.Password, false, lockoutOnFailure: false);
+                if (result.Succeeded)
+                {
+                    Logger.LogInformation("User logged in.");
+                    NavigationManager.NavigateTo("/Account/Manage");
+                    return;
+                }
+                else
+                {
+                    ErrorMessage = "Invalid login attempt.";
+                }
+            }
+            else
+            {
+                ErrorMessage = "Only administrators can log in.";
+            }
+        }
+        else
+        {
+            ErrorMessage = "Invalid login attempt.";
+        }
+    }
+
+    private class SignInFormModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "hugospangberg1@gmail.com";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "Bytmig123!";
+
+    }
+
+}

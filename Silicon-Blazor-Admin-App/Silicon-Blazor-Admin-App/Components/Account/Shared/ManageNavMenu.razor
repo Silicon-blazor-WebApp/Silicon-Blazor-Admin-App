@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Silicon_Blazor_Admin_App.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+<ul class="nav nav-pills flex-column">
+
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/Course">Create new course</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/User">Set User as Admin</NavLink>
+    </li>
+
+</ul>
+
+@code {
+    private bool hasExternalLogins;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    }
+}
