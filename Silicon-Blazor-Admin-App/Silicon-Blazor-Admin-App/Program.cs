@@ -62,6 +62,6 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Silicon_Blazor_Admin_App.Client._Imports).Assembly);
 
 // Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
+
 
 app.Run();

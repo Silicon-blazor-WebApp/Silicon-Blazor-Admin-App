@@ -8,7 +8,7 @@
 @using Silicon_Blazor_Admin_App.Data
 
 @inject SignInManager<ApplicationUser> SignInManager
-@inject ILogger<Login> Logger
+
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject UserManager<ApplicationUser> UserManager
@@ -57,7 +57,7 @@
                 var result = await SignInManager.PasswordSignInAsync(signInForm.Email, signInForm.Password, false, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    Logger.LogInformation("User logged in.");
+
                     NavigationManager.NavigateTo("/Account/Manage");
                     return;
                 }

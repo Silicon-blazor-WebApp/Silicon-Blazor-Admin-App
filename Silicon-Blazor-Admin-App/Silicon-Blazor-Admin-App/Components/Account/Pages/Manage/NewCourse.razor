@@ -1,6 +1,6 @@
 ﻿@page "/Account/Manage/Course"
 
-<EditForm Model="@CourseModel" OnInvalidSubmit="HandleValidSubmit">
+<EditForm Model="@CourseModel" OnValidSubmit="HandleValidSubmit" FormName="courseForm">
     <DataAnnotationsValidator />
 
     <label>Title</label>
@@ -38,15 +38,15 @@
 
     <label>Categories</label>
     <InputSelect @bind-Value="CourseModel.Categories" multiple="true">
-        @foreach (var category in CourseModel.Categories)
+        @foreach (var category in CategoriesList)
         {
-            
+            <option value="@category">@category</option>
         }
     </InputSelect>
 
     <label>Authors</label>
     <div>
-        @foreach (var author in CourseModel.Authors)
+        @foreach (var author in CourseModel.Authors!)
         {
             <InputText @bind-Value="author.Name" />
         }
@@ -54,7 +54,7 @@
     </div>
 
     <label>Price Currency</label>
-    <InputText @bind-Value="CourseModel.Prices.Currency" />
+    <InputText @bind-Value="CourseModel.Prices!.Currency" />
 
     <label>Price</label>
     <InputNumber @bind-Value="CourseModel.Prices.Price" />
@@ -63,7 +63,7 @@
     <InputNumber @bind-Value="CourseModel.Prices.Discount" />
 
     <label>Content Description</label>
-    <InputText @bind-Value="CourseModel.Content.Description" />
+    <InputText @bind-Value="CourseModel.Content!.Description" />
 
     <label>Content Includes</label>
     <InputSelect @bind-Value="CourseModel.Content.Includes" multiple="true">
@@ -75,7 +75,7 @@
 
     <label>Program Details</label>
     <div>
-        @foreach (var detail in CourseModel.Content.ProgramDetails)
+        @foreach (var detail in CourseModel.Content.ProgramDetails!)
         {
             <div>
                 <label>Title</label>
@@ -91,18 +91,57 @@
     <button type="submit">Submit</button>
 </EditForm>
 
-
-
-@code{
-    
-    
+@code {
     public Course CourseModel { get; set; } = new Course();
-
 
     public async Task HandleValidSubmit()
     {
-        
+        var mutation = @"
+            mutation CreateCourse($input: CourseInput!) {
+                createCourse(input: $input) {
+                    id
+                    title
+                }
+            }
+        ";
 
+        var courseInput = new
+        {
+            Title = CourseModel.Title,
+            Ingress = CourseModel.Ingress,
+            StarRating = CourseModel.StarRating,
+            Reviews = CourseModel.Reviews,
+            LikesInProcent = CourseModel.LikesInProcent,
+            Likes = CourseModel.Likes,
+            Hours = CourseModel.Hours,
+            IsBestseller = CourseModel.IsBestseller,
+            IsDigital = CourseModel.IsDigital,
+            ImageUri = CourseModel.ImageUri,
+            ImageHeaderUri = CourseModel.ImageHeaderUri,
+            Categories = CourseModel.Categories,
+            Authors = CourseModel.Authors!.Select(a => new { Name = a.Name }).ToList(),
+            Prices = new
+            {
+                Currency = CourseModel.Prices?.Currency,
+                Price = CourseModel.Prices?.Price,
+                Discount = CourseModel.Prices?.Discount
+            },
+            Content = new
+            {
+                Description = CourseModel.Content?.Description,
+                Includes = CourseModel.Content?.Includes,
+                ProgramDetails = CourseModel.Content?.ProgramDetails?.Select(pd => new { Title = pd.Title, Description = pd.Description }).ToList()
+            }
+        };
+
+        var client = new HttpClient();
+        var response = await client.PostAsJsonAsync("http://localhost:7057/api/GraphQL", new
+        {
+            query = mutation,
+            variables = new { input = courseInput }
+        });
+
+        var responseData = await response.Content.ReadAsStringAsync();
     }
 
     public void AddAuthor()
@@ -125,34 +164,31 @@
 
     public class Course
     {
+        public Course()
+        {
+            Authors = new List<Author>();
+            Prices = new Prices();
+            Content = new Content();
+            Categories = Array.Empty<string>();
+        }
 
         public string? ImageUri { get; set; }
         public string? ImageHeaderUri { get; set; }
         public bool IsBestseller { get; set; }
-
         public bool IsDigital { get; set; }
-
-        public string[]? Categories { get; set; }
-
+        public string[] Categories { get; set; }
         public string? Title { get; set; }
-
         public string? Ingress { get; set; }
-
         public decimal StarRating { get; set; }
-
         public string? Reviews { get; set; }
         public string? LikesInProcent { get; set; }
-
         public string? Likes { get; set; }
-
         public string? Hours { get; set; }
-
         public virtual List<Author>? Authors { get; set; }
-
         public virtual Prices? Prices { get; set; }
-
         public virtual Content? Content { get; set; }
     }
+
     public class Author
     {
         public string? Name { get; set; }
@@ -167,16 +203,20 @@
 
     public class Content
     {
+        public Content()
+        {
+            ProgramDetails = new List<ProgramDetailItem>();
+            Includes = Array.Empty<string>();
+        }
+
         public string? Description { get; set; }
-        public string[]? Includes { get; set; }
+        public string[] Includes { get; set; }
         public virtual List<ProgramDetailItem>? ProgramDetails { get; set; }
     }
 
     public class ProgramDetailItem
     {
-        public int Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
     }
-
 }
